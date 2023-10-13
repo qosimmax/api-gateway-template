@@ -9,6 +9,8 @@ import (
 
 // Config contains environment variables.
 type Config struct {
+	ServiceName        string  `envconfig:"SERVICE_NAME" required:"true"`
+	Environment        string  `envconfig:"ENVIRONMENT" required:"true"`
 	Port               string  `envconfig:"PORT" default:"8000"`
 	JaegerAgentHost    string  `envconfig:"JAEGER_AGENT_HOST" default:"localhost"`
 	JaegerAgentPort    string  `envconfig:"JAEGER_AGENT_PORT" default:"6831"`

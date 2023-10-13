@@ -14,5 +14,5 @@ func (s *Server) setupRoutes() {
 	s.Router.HandleFunc("/_healthz", handler.Healthz).Methods(http.MethodGet).Name("Health")
 
 	api := s.Router.PathPrefix(v1API).Subrouter()
-	api.HandleFunc("/example", handler.Example()).Methods(http.MethodGet).Name("Example")
+	api.HandleFunc("/example", handler.Example(s.API)).Methods(http.MethodGet).Name("Example")
 }

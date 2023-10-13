@@ -8,9 +8,10 @@ package server
 import (
 	"api-gateway-template/client/fakeapi"
 	"api-gateway-template/config"
-	"api-gateway-template/monitoring/metrics"
+	"api-gateway-template/monitoring/trace"
 	"context"
 	"fmt"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 
 	"net/http"
 	"os"
@@ -23,19 +24,17 @@ import (
 
 // Server holds the HTTP server, router, config and all clients.
 type Server struct {
-	Config *config.Config
-	API    *fakeapi.Client
-	HTTP   *http.Server
-	Router *mux.Router
+	Config         *config.Config
+	API            *fakeapi.Client
+	HTTP           *http.Server
+	Router         *mux.Router
+	TracerProvider *tracesdk.TracerProvider
 }
 
 // Create sets up the HTTP server, router and all clients.
 // Returns an error if an error occurs.
 func (s *Server) Create(ctx context.Context, config *config.Config) error {
-	metrics.RegisterPrometheusCollectors()
-
 	var apiClient fakeapi.Client
-
 	if err := apiClient.Init(config); err != nil {
 		return fmt.Errorf("api client: %w", err)
 	}
@@ -57,21 +56,24 @@ func (s *Server) Create(ctx context.Context, config *config.Config) error {
 // It also makes sure that the server gracefully shuts down on exit.
 // Returns an error if an error occurs.
 func (s *Server) Serve(ctx context.Context) error {
+	var err error
+	s.TracerProvider, err = trace.TracerProvider(s.Config)
+	if err != nil {
+		return fmt.Errorf("init global tracer: %w", err)
+	}
+
 	idleConnsClosed := make(chan struct{}) // this is used to signal that we can not exit
-	go func(ctx context.Context, s *http.Server) {
+	go func(ctx context.Context) {
 		stop := make(chan os.Signal, 1)
 		signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 		<-stop
 
 		log.Info("Shutdown signal received")
-
-		if err := s.Shutdown(ctx); err != nil {
-			log.Error(err.Error())
-		}
+		s.shutdown(ctx)
 
 		close(idleConnsClosed) // call close to say we can now exit the function
-	}(ctx, s.HTTP)
+	}(ctx)
 
 	log.Infof("Ready at: %s", s.Config.Port)
 
@@ -81,4 +83,19 @@ func (s *Server) Serve(ctx context.Context) error {
 	<-idleConnsClosed // this will block until close is called
 
 	return nil
+}
+
+func (s *Server) shutdown(ctx context.Context) {
+	if err := s.TracerProvider.Shutdown(ctx); err != nil {
+		log.Error(err.Error())
+	}
+
+	if err := s.API.Close(); err != nil {
+		log.Error(err.Error())
+	}
+
+	if err := s.HTTP.Shutdown(ctx); err != nil {
+		log.Error(err.Error())
+	}
+
 }
