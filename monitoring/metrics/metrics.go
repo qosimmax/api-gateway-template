@@ -1,4 +1,4 @@
-// Package metrics sets up and handles our promethous collectors.
+// Package metrics sets up and handles our prometheus collectors.
 package metrics
 
 import (
