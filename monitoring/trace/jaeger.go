@@ -3,6 +3,7 @@ package trace
 import (
 	"api-gateway-template/config"
 	"context"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"

@@ -5,6 +5,7 @@ import (
 	"api-gateway-template/app/pb/fakeapi"
 	"api-gateway-template/config"
 	"fmt"
+
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

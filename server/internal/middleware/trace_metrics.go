@@ -3,9 +3,10 @@ package middleware
 
 import (
 	"api-gateway-template/monitoring/metrics"
-	"github.com/gorilla/mux"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // TraceMetrics is the configuration for trace and metrics middleware.

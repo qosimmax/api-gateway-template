@@ -12,8 +12,6 @@ import (
 	"api-gateway-template/monitoring/trace"
 	"context"
 	"fmt"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,6 +19,7 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 // Server holds the HTTP server, router, config and all clients.

@@ -3,10 +3,11 @@ package server
 import (
 	"api-gateway-template/server/internal/handler"
 	"api-gateway-template/server/internal/middleware"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-	"net/http"
 )
 
 const v1API string = "/api/v1"
