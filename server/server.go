@@ -8,6 +8,7 @@ package server
 import (
 	"api-gateway-template/client/fakeapi"
 	"api-gateway-template/config"
+	"api-gateway-template/monitoring/metrics"
 	"api-gateway-template/monitoring/trace"
 	"context"
 	"fmt"
@@ -34,6 +35,8 @@ type Server struct {
 // Create sets up the HTTP server, router and all clients.
 // Returns an error if an error occurs.
 func (s *Server) Create(ctx context.Context, config *config.Config) error {
+	metrics.RegisterPrometheusCollectors()
+
 	var apiClient fakeapi.Client
 	if err := apiClient.Init(config); err != nil {
 		return fmt.Errorf("api client: %w", err)

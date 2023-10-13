@@ -2,6 +2,7 @@ package handler
 
 import (
 	"api-gateway-template/app"
+	"encoding/json"
 	"net/http"
 )
 
@@ -16,13 +17,15 @@ import (
 func Example(f app.DataFetcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		_, err := f.GetExampleData(ctx)
+		resp, err := f.GetExampleData(ctx)
 		if err != nil {
 			handleError(w, err, http.StatusInternalServerError, true)
+			return
 		}
 
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		//_, _ = w.Write(response)
+		data, _ := json.Marshal(resp)
+		_, _ = w.Write(data)
 	}
 }
