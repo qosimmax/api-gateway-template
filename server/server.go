@@ -6,7 +6,7 @@
 package server
 
 import (
-	"api-gateway-template/client/api"
+	"api-gateway-template/client/fakeapi"
 	"api-gateway-template/config"
 	"api-gateway-template/monitoring/metrics"
 	"context"
@@ -24,7 +24,7 @@ import (
 // Server holds the HTTP server, router, config and all clients.
 type Server struct {
 	Config *config.Config
-	API    *api.Client
+	API    *fakeapi.Client
 	HTTP   *http.Server
 	Router *mux.Router
 }
@@ -34,7 +34,7 @@ type Server struct {
 func (s *Server) Create(ctx context.Context, config *config.Config) error {
 	metrics.RegisterPrometheusCollectors()
 
-	var apiClient api.Client
+	var apiClient fakeapi.Client
 
 	if err := apiClient.Init(config); err != nil {
 		return fmt.Errorf("api client: %w", err)

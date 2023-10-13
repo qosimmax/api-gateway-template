@@ -38,9 +38,9 @@ docker:
 
 gen-proto:
 	protoc \
-    --go_out=./example/pb \
+    --go_out=./app/pb \
     --go_opt=paths=import \
-    --go-grpc_out=./example/pb \
+    --go-grpc_out=./app/pb \
     --go-grpc_opt=paths=import \
     -I=$(PROTO_PATH)/fake-api \
      $(PROTO_PATH)/fake-api/*.proto \
