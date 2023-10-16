@@ -20,12 +20,12 @@ func (s *Server) setupRoutes() {
 	api := s.Router.PathPrefix(v1API).Subrouter()
 	api.HandleFunc("/example", handler.Example(s.API)).Methods(http.MethodGet).Name("Example")
 
-	addTracingAndMetrics(api)
+	addTracingAndMetricsMiddleware(api)
 
 }
 
-// addTracingAndMetrics - Adds tracing and metrics to a router.
-func addTracingAndMetrics(r *mux.Router) {
+// addTracingAndMetricsMiddleware - Adds tracing and metrics to a router.
+func addTracingAndMetricsMiddleware(r *mux.Router) {
 	r.Use(otelmux.Middleware("api-gateway"))
 
 	tm := middleware.TraceMetrics{}

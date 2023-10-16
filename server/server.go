@@ -19,22 +19,23 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	metricsdk "go.opentelemetry.io/otel/sdk/metric"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 // Server holds the HTTP server, router, config and all clients.
 type Server struct {
-	Config         *config.Config
-	API            *fakeapi.Client
-	HTTP           *http.Server
-	Router         *mux.Router
-	TracerProvider *tracesdk.TracerProvider
+	Config          *config.Config
+	API             *fakeapi.Client
+	HTTP            *http.Server
+	Router          *mux.Router
+	TracerProvider  *tracesdk.TracerProvider
+	MetricsProvider *metricsdk.MeterProvider
 }
 
 // Create sets up the HTTP server, router and all clients.
 // Returns an error if an error occurs.
 func (s *Server) Create(ctx context.Context, config *config.Config) error {
-	metrics.RegisterPrometheusCollectors()
 
 	var apiClient fakeapi.Client
 	if err := apiClient.Init(config); err != nil {
@@ -58,10 +59,9 @@ func (s *Server) Create(ctx context.Context, config *config.Config) error {
 // It also makes sure that the server gracefully shuts down on exit.
 // Returns an error if an error occurs.
 func (s *Server) Serve(ctx context.Context) error {
-	var err error
-	s.TracerProvider, err = trace.TracerProvider(s.Config)
+	err := s.addTracingAndMetrics()
 	if err != nil {
-		return fmt.Errorf("init global tracer: %w", err)
+		return err
 	}
 
 	idleConnsClosed := make(chan struct{}) // this is used to signal that we can not exit
@@ -87,8 +87,27 @@ func (s *Server) Serve(ctx context.Context) error {
 	return nil
 }
 
+func (s *Server) addTracingAndMetrics() error {
+	var err error
+	s.TracerProvider, err = trace.TracerProvider(s.Config)
+	if err != nil {
+		return fmt.Errorf("init global tracer: %w", err)
+	}
+
+	s.MetricsProvider, err = metrics.MetricsProvider(s.Config)
+	if err != nil {
+		return fmt.Errorf("init metrics: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Server) shutdown(ctx context.Context) {
 	if err := s.TracerProvider.Shutdown(ctx); err != nil {
+		log.Error(err.Error())
+	}
+
+	if err := s.MetricsProvider.Shutdown(ctx); err != nil {
 		log.Error(err.Error())
 	}
 
