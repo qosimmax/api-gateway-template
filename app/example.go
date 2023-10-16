@@ -8,8 +8,9 @@ import (
 // Data contains example data indicating if the data is fake
 // or not.
 type Data struct {
-	IsFake bool      `json:"isFake"`
-	Date   time.Time `json:"date"`
+	IsFake  bool      `json:"isFake"`
+	Date    time.Time `json:"date"`
+	Message string    `json:"message"`
 }
 
 // DataFetcher is an interface for getting example data.
