@@ -52,3 +52,8 @@ add-submodule:
 
 pull-proto-module:
 	git submodule update --recursive --remote
+
+
+# create mock objects for tests
+gen-mocks:
+	mockery --dir=app  --name=DataFetcher --output=mocks
